@@ -95,6 +95,10 @@ class Socks5Server(SocketServer.StreamRequestHandler):
     def decrypt(self, data):
         return data.translate(decrypt_table)
 
+    def output_fake_httppage(self, sock):
+        http_page='HTTP/1.0 200 OK\r\nContent-Type:text/html\r\nConnection:close\r\n\r\n<html><body>It Works!</body></html>\r\n'
+        send_all(sock, http_page)
+
     def handle(self):
         try:
             sock = self.connection
@@ -107,6 +111,7 @@ class Socks5Server(SocketServer.StreamRequestHandler):
             else:
                 # not support
                 logging.warn('addr_type not support')
+                self.output_fake_httppage(sock)
                 return
             port = struct.unpack('>H', self.decrypt(self.rfile.read(2)))    # get dst port into small endian
             try:
